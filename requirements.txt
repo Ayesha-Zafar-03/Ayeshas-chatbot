@@ -1,9 +1,12 @@
-streamlit
-langchain
-langchain-community
+streamlit~=1.50.0
+langchain~=0.3.27
+langchain-community~=0.3.29
 langchain-groq
 chromadb
 pypdf
-python-dotenv
+python-dotenv~=1.1.1
 sentence-transformers
 huggingface-hub
+
+Pygments~=2.19.2
+CSS
