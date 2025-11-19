@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
+<<<<<<< HEAD
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
@@ -10,17 +11,46 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
 # ---------------- Setup ----------------
+=======
+from langchain.text_splitter import RecursiveCharacterTextSplitter  # works with langchain==0.1.101
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+from langchain_groq import ChatGroq
+
+
+# ---------------- Streamlit Setup ----------------
+>>>>>>> 58ba614091480973700d337fa9bb4f54b403dfc7
 st.set_page_config(page_title="Ayesha's Career Chatbot", layout="centered")
 
-# Load API keys
+# Load environment variables
 load_dotenv()
 if "GROQ_API_KEY" not in os.environ:
     st.error("❌ GROQ_API_KEY not found. Add it in your .env file.")
     st.stop()
 
+# Paths and directories
 CV_PATH = "cv.pdf"
 INDEX_DIR = "chroma_index"
 
+<<<<<<< HEAD
+=======
+
+# ---------------- Custom CSS ----------------
+st.markdown(
+    """
+    <style>
+    .stApp {background-color: #F0F4F8; color: #19183B;}
+    .stChatMessage {background-color: #A1C2BD; border-radius: 10px; padding: 10px; margin-bottom: 10px; color: #19183B;}
+    .stChatInput {background-color: #E7F2EF; border: none; color: #19183B;}
+    .stButton>button {background-color: #A1C2BD; color: #19183B; border: none; padding: 10px 20px; border-radius: 5px;}
+    .stButton>button:hover {background-color: #708993; color: #E7F2EF;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+>>>>>>> 58ba614091480973700d337fa9bb4f54b403dfc7
 
 # ---------------- Caching ----------------
 @st.cache_resource
