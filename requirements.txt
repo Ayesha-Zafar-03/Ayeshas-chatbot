@@ -13,8 +13,4 @@ huggingface-hub==0.16.4
 
 # PDF and environment
 pypdf==3.16.0
-<<<<<<< HEAD
 python-dotenv==1.0.1
-=======
-python-dotenv==1.0.1
->>>>>>> 58ba614091480973700d337fa9bb4f54b403dfc7
