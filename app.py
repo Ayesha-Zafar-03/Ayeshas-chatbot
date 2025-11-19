@@ -1,16 +1,16 @@
-# ---------------- Imports ----------------
 import streamlit as st
 import os
 from dotenv import load_dotenv
 import shutil
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter  # works with langchain==0.1.101
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
+
 
 # ---------------- Streamlit Setup ----------------
 st.set_page_config(page_title="Ayesha's Career Chatbot", layout="centered")
