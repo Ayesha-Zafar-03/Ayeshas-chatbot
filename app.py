@@ -3,13 +3,12 @@ import os
 from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
-
 # ---------------- Setup ----------------
 st.set_page_config(page_title="Ayesha's Career Chatbot", layout="centered")
 
@@ -21,7 +20,6 @@ if "GROQ_API_KEY" not in os.environ:
 
 CV_PATH = "cv.pdf"
 INDEX_DIR = "chroma_index"
-BACKGROUND_GIF = "https://c.tenor.com/Ho0ZextTZJEAAAAC/ai-digital.gif"
 
 
 # ---------------- Caching ----------------
@@ -44,7 +42,6 @@ def load_vectorstore():
     chunks = splitter.split_documents(docs)
 
     vs = Chroma.from_documents(chunks, embeddings, persist_directory=INDEX_DIR)
-    vs.persist()
     return vs
 
 
@@ -54,7 +51,7 @@ retriever = vectorstore.as_retriever(search_kwargs={"k": 15})
 
 llm = ChatGroq(
     groq_api_key=os.getenv('GROQ_API_KEY'),
-    model="llama-3.3-70b-versatile",  # ⚡ fast Groq model
+    model="llama-3.3-70b-versatile",
     temperature=0
 )
 
@@ -75,12 +72,10 @@ qa_chain = ConversationalRetrievalChain.from_llm(
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ---------------- Custom CSS ----------------
-# ---------------- Custom CSS ----------------
+# ---------------- Custom CSS (YOUR ORIGINAL CSS) ----------------
 st.markdown(
     """
     <style>
-    /* Background GIF */
     .stApp {
         background: url("https://c.tenor.com/Ho0ZextTZJEAAAAC/ai-digital.gif") no-repeat center center fixed;
         background-size: cover;
@@ -88,31 +83,23 @@ st.markdown(
         min-height: 100vh;
     }
 
-    /* Chat bubbles */
-    .user-bubble {
-        background: #1E1E1E !important;
+    .user-bubble, .bot-bubble {
         border-radius: 14px !important;
         padding: 10px 14px !important;
-        color: #FFFFFF !important;
         margin: 6px 0 !important;
-        backdrop-filter: blur(10px) !important;
-        border: none !important;
         max-width: 75% !important;
         text-align: left !important;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    .user-bubble {
+        background: #1E1E1E !important;
+        color: #FFFFFF !important;
     }
     .bot-bubble {
         background: rgba(0, 0, 0, 0.6) !important;
-        border-radius: 14px !important;
-        padding: 10px 14px !important;
         color: #FFFFFF !important;
-        margin: 6px 0 !important;
-        backdrop-filter: blur(10px) !important;
-        border: none !important;
-        max-width: 75% !important;
-        text-align: left !important;
     }
 
-    /* Avatars */
     .chat-row {
         display: flex;
         align-items: flex-start;
@@ -124,149 +111,53 @@ st.markdown(
         border-radius: 50%;
         margin-right: 12px;
         flex-shrink: 0;
-        border: 2px solid black;   /* White border only */
+        border: 2px solid black;
         box-shadow: 0 3px 8px rgba(0,0,0,0.4);
     }
     .chat-msg {
         flex: 1;
     }
 
-    /* Chat container for better scrolling */
-    .chat-container {
-        max-height: 70vh;
-        overflow-y: auto;
-        padding: 10px;
-        scroll-behavior: smooth;
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(10px);}
+        to {opacity: 1; transform: translateY(0);}
     }
 
-    /* Remove hover effect on suggestion buttons */
     .stButton>button {
         background-color: #1E1E1E !important;
         color: #FFFFFF !important;
         border: 1px solid black!important;
         border-radius: 8px !important;
         padding: 8px 16px !important;
-        transition: none !important; /* Disable transitions */
     }
     .stButton>button:hover {
-        background-color: #1E1E1E !important; /* Same as default state */
-        color: #FFFFFF !important;
         border: 1px solid #FFFFFF !important;
-        cursor: pointer !important; /* Keep pointer cursor */
+        cursor: pointer !important;
     }
 
-    /* Make chat input border black */
     .stChatInput input {
         background-color: black !important;
         border: 2px solid black !important;
         border-radius: 8px !important;
-        background-color: black; /* Keep background white for contrast */
-        color:#FFFFFF !important; /* Text color */
+        color: #FFFFFF !important;
     }
     .stChatInput input:focus {
-        border: 2px solid black !important; /* Ensure black border on focus */
-        box-shadow: none !important; /* Remove default focus shadow */
+        border: 2px solid black !important;
+        box-shadow: none !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 # ---------------- UI ----------------
 st.title("✨ Ask Ayesha's AI Career Bot")
 st.write("Ask me anything about **Ayesha's education, skills, and projects** — answers come only from her CV.")
 
-# Custom avatar URLs
-BOT_AVATAR = "https://cdn-icons-png.flaticon.com/512/4712/4712107.png"  # grey robot
-USER_AVATAR = "https://cdn-icons-png.flaticon.com/512/1077/1077063.png"  # black person
+BOT_AVATAR = "https://cdn-icons-png.flaticon.com/512/4712/4712107.png"
+USER_AVATAR = "https://cdn-icons-png.flaticon.com/512/1077/1077063.png"
 
-# Create a container for chat messages
-chat_container = st.container()
-
-with chat_container:
-    # Display previous messages
-    for i, msg in enumerate(st.session_state.messages):
-        # Use unique IDs for each message
-        msg_id = f"msg-{i}"
-        if msg["role"] == "assistant":
-            st.markdown(
-                f"""
-                <div class="chat-row" id="{msg_id}">
-                    <img src="{BOT_AVATAR}" class="chat-avatar">
-                    <div class="chat-msg"><div class="bot-bubble">{msg['content']}</div></div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        elif msg["role"] == "user":
-            st.markdown(
-                f"""
-                <div class="chat-row" id="{msg_id}">
-                    <img src="{USER_AVATAR}" class="chat-avatar">
-                    <div class="chat-msg"><div class="user-bubble">{msg['content']}</div></div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-
-# Function to handle new messages and scrolling
-def add_message_and_scroll(role, content):
-    st.session_state.messages.append({"role": role, "content": content})
-    msg_id = f"msg-{len(st.session_state.messages) - 1}"
-
-    if role == "user":
-        st.markdown(
-            f"""
-            <div class="chat-row" id="{msg_id}">
-                <img src="{USER_AVATAR}" class="chat-avatar">
-                <div class="chat-msg"><div class="user-bubble">{content}</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f"""
-            <div class="chat-row" id="{msg_id}">
-                <img src="{BOT_AVATAR}" class="chat-avatar">
-                <div class="chat-msg"><div class="bot-bubble">{content}</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # Improved scrolling script
-    scroll_js = f"""
-    <script>
-    setTimeout(function() {{
-        const element = document.getElementById('{msg_id}');
-        if (element) {{
-            element.scrollIntoView({{ 
-                behavior: 'smooth', 
-                block: 'end',
-                inline: 'nearest'
-            }});
-        }}
-    }}, 100);
-    </script>
-    """
-    st.markdown(scroll_js, unsafe_allow_html=True)
-
-
-# Chat input
-if user_q := st.chat_input("Type your question about Ayesha's CV..."):
-    # Add user message
-    add_message_and_scroll("user", user_q)
-
-    # Bot response
-    with st.spinner("Thinking..."):
-        result = qa_chain({"question": user_q})
-    answer = result["answer"]
-
-    # Add bot response
-    add_message_and_scroll("assistant", answer)
-
-# ---------------- Suggestions ----------------
+# ---------------- Suggestions at TOP ----------------
 if len(st.session_state.messages) == 0:
     st.markdown("#### 🔎 Try asking me:")
     cols = st.columns(3)
@@ -276,17 +167,68 @@ if len(st.session_state.messages) == 0:
         "What are Ayesha's top technical skills?"
     ]
     for i, text in enumerate(suggestions):
-        if cols[i].button(text):
-            # Add user message
-            add_message_and_scroll("user", text)
-
-            # Bot response
+        if cols[i].button(text, key=f"sugg_{i}"):
+            st.session_state.messages.append({"role": "user", "content": text})
             with st.spinner("Thinking..."):
                 result = qa_chain({"question": text})
             answer = result["answer"]
-
-            # Add bot response
-            add_message_and_scroll("assistant", answer)
-
-            # Force rerun to update the display
+            st.session_state.messages.append({"role": "assistant", "content": answer})
             st.rerun()
+# ---------------- Chat Container ----------------
+chat_container = st.container()  # fixed container for chat messages
+
+# ---------------- Chat Input ----------------
+if prompt := st.chat_input("Type your question about Ayesha's CV..."):
+    # Append user message
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # Get bot response
+    with st.spinner("Thinking..."):
+        result = qa_chain.invoke({"question": prompt})
+        answer = result["answer"]
+
+    # Append bot message
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+
+# ---------------- Display Chat History ----------------
+chat_container = st.container()
+with chat_container:
+    for i, msg in enumerate(st.session_state.messages):
+        msg_id = f"msg-{i}"
+        is_latest_bot = i == len(st.session_state.messages) - 1 and msg["role"] == "assistant"
+        html_id = "latest-bot-msg" if is_latest_bot else msg_id
+
+        if msg["role"] == "assistant":
+            st.markdown(
+                f"""
+                <div class="chat-row" id="{html_id}">
+                    <img src="{BOT_AVATAR}" class="chat-avatar">
+                    <div class="chat-msg"><div class="bot-bubble">{msg['content']}</div></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f"""
+                <div class="chat-row" id="{html_id}">
+                    <img src="{USER_AVATAR}" class="chat-avatar">
+                    <div class="chat-msg"><div class="user-bubble">{msg['content']}</div></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+# ---------------- Scroll latest bot message to TOP ----------------
+st.markdown(
+    """
+    <script>
+    const latestBot = document.getElementById('latest-bot-msg');
+    if(latestBot){
+        // Scroll latest bot message to top
+        latestBot.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+    </script>
+    """,
+    unsafe_allow_html=True
+)
