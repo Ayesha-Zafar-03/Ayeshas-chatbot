@@ -2,7 +2,7 @@
 streamlit==1.26.0
 
 # LangChain core
-langchain==0.1.101
+langchain==0.0.354
 langchain-community==0.0.273
 langchain-groq==0.1.3
 
