@@ -1,3 +1,4 @@
+# ---------------- Imports ----------------
 import streamlit as st
 import os
 from dotenv import load_dotenv
@@ -11,18 +12,19 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
 
-
-# ---------------- Setup ----------------
+# ---------------- Streamlit Setup ----------------
 st.set_page_config(page_title="Ayesha's Career Chatbot", layout="centered")
 
-# Load API keys
+# Load environment variables
 load_dotenv()
 if "GROQ_API_KEY" not in os.environ:
     st.error("❌ GROQ_API_KEY not found. Add it in your .env file.")
     st.stop()
 
+# Paths and directories
 CV_PATH = "cv.pdf"
 INDEX_DIR = "chroma_index"
+
 
 # ---------------- Custom CSS ----------------
 st.markdown(
