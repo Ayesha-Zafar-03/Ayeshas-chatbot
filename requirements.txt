@@ -1,16 +1,21 @@
-# Streamlit UI
+# Streamlit
 streamlit==1.26.0
 
-# LangChain core
-langchain==0.0.354
-langchain-community==0.0.273
+# LangChain latest stable
+langchain==0.1.17
+langchain-community==0.0.38
 langchain-groq==0.1.3
 
-# Vector store & embeddings
+# Vector store (new Chroma API)
 chromadb==0.5.3
+
+# Embeddings
 sentence-transformers==2.2.2
 huggingface-hub==0.16.4
 
-# PDF and environment
+# PDF + env
 pypdf==3.16.0
 python-dotenv==1.0.1
+
+# Fix Streamlit dependency
+rich==13.7.0
